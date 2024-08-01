@@ -3,8 +3,14 @@ import { Item } from '../../data'
 import DraggableItem from '../DraggableItem'
 import { List } from './styled'
 
-const ItemList = ({ items }: { items: Item[] }) => (
-  <Droppable droppableId="droppable">
+interface ItemListProps {
+  items: Item[]
+  droppableId: string
+  isInvalidDrop: boolean
+}
+
+const ItemList = ({ items, droppableId, isInvalidDrop }: ItemListProps) => (
+  <Droppable droppableId={droppableId}>
     {(provided, snapshot) => (
       <List
         {...provided.droppableProps}
@@ -15,6 +21,7 @@ const ItemList = ({ items }: { items: Item[] }) => (
             key={item.id}
             item={item}
             index={index}
+            isInvalidDrop={isInvalidDrop}
           />
         ))}
         {provided.placeholder}
