@@ -1,5 +1,5 @@
 import { DragUpdate } from 'react-beautiful-dnd'
-import { Column } from '../data'
+import { Column, Item } from '../data'
 
 interface UpdateColumnItemsParams {
   sourceIndex: number
@@ -16,10 +16,13 @@ interface MoveItemBetweenColumnsParams {
   columns: Record<string, Column>
 }
 
-const isEven = (id: number) => {
-  return id % 2 === 0
+interface canDropItemWithoutCreatingEvenSequenceParams {
+  draggableId: string
+  destinationIndex: number
+  finishColumn: Column
 }
 
+//1->3 이동 불가 조건 및 짝수 나열 조건 처리
 export const isInvalidDropCondition = (
   { destination, source, draggableId }: DragUpdate,
   columns: Record<string, Column>
@@ -36,11 +39,11 @@ export const isInvalidDropCondition = (
   const finishColumn = columns[destination.droppableId]
 
   if (
-    draggableId &&
-    isEven(Number(draggableId)) &&
-    ((destination.index > 0 &&
-      isEven(finishColumn.items[destination.index - 1]?.id)) ||
-      isEven(finishColumn.items[destination.index]?.id))
+    canDropItemWithoutCreatingEvenSequence({
+      draggableId,
+      destinationIndex: destination.index,
+      finishColumn
+    })
   ) {
     return true
   }
@@ -48,6 +51,7 @@ export const isInvalidDropCondition = (
   return false
 }
 
+// 같은 Draggable내에서 업데이트
 export const updateColumnItems = ({
   sourceIndex,
   destinationIndex,
@@ -68,6 +72,7 @@ export const updateColumnItems = ({
   }
 }
 
+//다른 Draggable 이동으로 인한 업데이트
 export const moveItemBetweenColumns = ({
   startColumn,
   finishColumn,
@@ -92,4 +97,31 @@ export const moveItemBetweenColumns = ({
       items: finishItems
     }
   }
+}
+
+// 짝수
+const isEven = (id: number) => {
+  return id % 2 === 0
+}
+
+// 짝수 나열 체크 함수
+const canDropItemWithoutCreatingEvenSequence = ({
+  draggableId,
+  destinationIndex,
+  finishColumn
+}: canDropItemWithoutCreatingEvenSequenceParams) => {
+  const tempItems = finishColumn.items.filter(
+    item => item.id.toString() !== draggableId
+  )
+  const draggedItem: Item = { id: Number(draggableId), content: '' }
+
+  tempItems.splice(destinationIndex, 0, draggedItem)
+
+  for (let i = 0; i < tempItems.length - 1; i++) {
+    if (isEven(tempItems[i].id) && isEven(tempItems[i + 1].id)) {
+      return true
+    }
+  }
+
+  return false
 }
