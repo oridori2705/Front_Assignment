@@ -1,32 +1,75 @@
-import { useState, useCallback } from 'react'
-import { DragDropContext, DropResult } from 'react-beautiful-dnd'
-import { Item, getItems, reorder } from './data'
+import { useState } from 'react'
+import { DragDropContext, DragUpdate, DropResult } from 'react-beautiful-dnd'
+import { getItems } from './data'
 
 import ItemList from './component/ItemList'
+import {
+  isInvalidDropCondition,
+  moveItemBetweenColumns,
+  updateColumnItems
+} from './utils/dragConditionFn'
 
 function App() {
-  const [items, setItems] = useState<Item[]>(getItems(10))
+  const [columns, setColumns] = useState(getItems(4))
+  const [isInvalidDrop, setIsInvalidDrop] = useState(false)
 
-  const onDragEnd = useCallback(
-    (result: DropResult) => {
-      if (!result.destination) {
-        return
-      }
+  const onDragStart = () => {
+    setIsInvalidDrop(false)
+  }
 
-      const newItems = reorder(
-        items,
-        result.source.index,
-        result.destination.index
+  const onDragEnd = (result: DropResult) => {
+    const { destination, source } = result
+
+    if (!destination) return
+    if (isInvalidDrop) {
+      setIsInvalidDrop(false)
+      return
+    }
+
+    const startColumn = columns[source.droppableId]
+    const finishColumn = columns[destination.droppableId]
+
+    if (startColumn === finishColumn) {
+      setColumns(() =>
+        updateColumnItems({
+          sourceIndex: source.index,
+          destinationIndex: destination.index,
+          columns,
+          currentColumnId: startColumn.id
+        })
       )
+    } else {
+      setColumns(() =>
+        moveItemBetweenColumns({
+          startColumn,
+          finishColumn,
+          sourceIndex: source.index,
+          destinationIndex: destination.index,
+          columns
+        })
+      )
+    }
+  }
 
-      setItems(newItems)
-    },
-    [items]
-  )
+  const onDragUpdate = (update: DragUpdate) => {
+    setIsInvalidDrop(isInvalidDropCondition(update, columns))
+  }
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <ItemList items={items} />
+    <DragDropContext
+      onDragEnd={onDragEnd}
+      onDragStart={onDragStart}
+      onDragUpdate={onDragUpdate}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        {Object.values(columns).map(column => (
+          <ItemList
+            key={column.id}
+            droppableId={column.id}
+            items={column.items}
+            isInvalidDrop={isInvalidDrop}
+          />
+        ))}
+      </div>
     </DragDropContext>
   )
 }

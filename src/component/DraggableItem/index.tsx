@@ -1,18 +1,23 @@
 import { Draggable } from 'react-beautiful-dnd'
-import { Item } from '../../data'
 import { ItemContainer } from './styled'
 
-const DraggableItem = ({ item, index }: { item: Item; index: number }) => (
+interface DraggableItemProps {
+  item: { id: number; content: string }
+  index: number
+  isInvalidDrop: boolean
+}
+
+const DraggableItem = ({ item, index, isInvalidDrop }: DraggableItemProps) => (
   <Draggable
-    key={item.id}
-    draggableId={item.id}
+    draggableId={item.id.toString()}
     index={index}>
     {(provided, snapshot) => (
       <ItemContainer
         ref={provided.innerRef}
         {...provided.draggableProps}
         {...provided.dragHandleProps}
-        isDragging={snapshot.isDragging}>
+        isDragging={snapshot.isDragging}
+        isInvalidDrop={isInvalidDrop}>
         {item.content}
       </ItemContainer>
     )}
