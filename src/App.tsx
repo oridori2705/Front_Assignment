@@ -15,6 +15,7 @@ import {
   moveItemBetweenColumns,
   updateColumnItems
 } from './utils/dragConditionFn'
+import DragDropDescription from './component/DragDescription'
 
 function App() {
   const [columns, setColumns] = useState<ColumnMap>(() => {
@@ -191,7 +192,9 @@ function App() {
           </div>
         </DragDropContext>
       </RootContainer>
+
       <ErrorMessage message={errorMessage} />
+      <DragDropDescription />
     </>
   )
 }
