@@ -9,7 +9,7 @@ import {
 
 import ErrorMessage from './component/ErrorMessage'
 import ItemList from './component/ItemList'
-import { getItems } from './data'
+import { ColumnMap, getItems } from './data'
 import {
   isInvalidDropCondition,
   moveItemBetweenColumns,
@@ -17,7 +17,10 @@ import {
 } from './utils/dragConditionFn'
 
 function App() {
-  const [columns, setColumns] = useState(getItems(4))
+  const [columns, setColumns] = useState<ColumnMap>(() => {
+    const savedColumns = localStorage.getItem('columns')
+    return savedColumns ? JSON.parse(savedColumns) : getItems(4)
+  })
   const [isInvalidDrop, setIsInvalidDrop] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [isMultiDragging, setIsMultiDragging] = useState(false)
@@ -52,31 +55,33 @@ function App() {
       const destinationIndex = destination.index
 
       if (startColumn === finishColumn) {
-        setColumns(() =>
-          updateColumnItems({
-            selectedItemsId:
-              selectedItemsArray.length > 0
-                ? [...selectedItemsArray]
-                : [Number(draggableId)],
-            destinationIndex: destinationIndex,
-            startColumnId: startColumn.id,
-            columns,
-            startIndex: source.index
-          })
-        )
+        const newColumns = updateColumnItems({
+          selectedItemsId:
+            selectedItemsArray.length > 0
+              ? [...selectedItemsArray]
+              : [Number(draggableId)],
+          destinationIndex: destinationIndex,
+          startColumnId: startColumn.id,
+          columns,
+          startIndex: source.index
+        })
+        setColumns(newColumns)
+
+        localStorage.setItem('columns', JSON.stringify(newColumns))
       } else {
-        setColumns(() =>
-          moveItemBetweenColumns({
-            startColumn,
-            finishColumn,
-            selectedItemIds:
-              selectedItemsArray.length > 0
-                ? [...selectedItemsArray]
-                : [Number(draggableId)],
-            destinationIndex,
-            columns
-          })
-        )
+        const newColumns = moveItemBetweenColumns({
+          startColumn,
+          finishColumn,
+          selectedItemIds:
+            selectedItemsArray.length > 0
+              ? [...selectedItemsArray]
+              : [Number(draggableId)],
+          destinationIndex,
+          columns
+        })
+        setColumns(newColumns)
+
+        localStorage.setItem('columns', JSON.stringify(newColumns))
       }
       setSelectedItems(new Set())
       setIsMultiDragging(false)
