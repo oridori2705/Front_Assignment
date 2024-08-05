@@ -5,8 +5,8 @@ import { Column, ColumnMap, Item } from '../data'
 interface UpdateColumnItemsParams {
   selectedItemsId: number[]
   destinationIndex: number
-  currentColumnId: string
-  columns: Record<string, Column>
+  startColumnId: string
+  columns: ColumnMap
   startIndex: number
 }
 
@@ -15,7 +15,7 @@ interface MoveItemsBetweenColumnsParams {
   finishColumn: Column
   selectedItemIds: number[]
   destinationIndex: number
-  columns: Record<string, Column>
+  columns: ColumnMap
 }
 
 interface IsEvenListParams {
@@ -36,7 +36,7 @@ interface MoveItemsParams {
 
 interface IsInvalidDropConditionParams {
   dragUpdate: DragUpdate
-  columns: Record<string, Column>
+  columns: ColumnMap
   selectedItems: Set<number>
 }
 
@@ -74,7 +74,7 @@ const moveItems = ({
  * @param {Object} params
  * @param {number[]} params.selectedItemsId - 이동할 아이템의 ID 목록
  * @param {number} params.destinationIndex - 아이템을 이동할 목적지 인덱스
- * @param {string} params.currentColumnId - 현재 컬럼 ID
+ * @param {string} params.startColumnId - 현재 컬럼 ID
  * @param {Record<string, Column>} params.columns - 모든 컬럼 데이터
  * @param {number} params.startIndex - 드래그가 시작된 인덱스
  * @returns {ColumnMap} - 업데이트된 컬럼 데이터
@@ -82,29 +82,29 @@ const moveItems = ({
 export const updateColumnItems = ({
   selectedItemsId,
   destinationIndex,
-  currentColumnId,
+  startColumnId,
   columns,
   startIndex
 }: UpdateColumnItemsParams): ColumnMap => {
-  const currentColumn = columns[currentColumnId]
+  const currentColumn = columns[startColumnId]
   const currentItems = Array.from(currentColumn.items)
 
   const selectedItems = prepareItemsForMove(currentItems, selectedItemsId)
 
-  const remainingItems = currentItems.filter(
+  const startRemainingItems = currentItems.filter(
     item => !selectedItemsId.includes(item.id)
   )
 
   const updatedItems = moveItems({
     destinationIndex,
     selectedItems,
-    remainingItems,
+    remainingItems: startRemainingItems,
     startIndex
   })
 
   return {
     ...columns,
-    [currentColumnId]: {
+    [startColumnId]: {
       ...currentColumn,
       items: updatedItems
     }
@@ -134,7 +134,7 @@ export const moveItemBetweenColumns = ({
 
   const itemsToMove = prepareItemsForMove(startItems, selectedItemIds)
 
-  const remainingItems = startItems.filter(
+  const startRemainingItems = startItems.filter(
     item => !selectedItemIds.includes(item.id)
   )
 
@@ -144,7 +144,7 @@ export const moveItemBetweenColumns = ({
     ...columns,
     [startColumn.id]: {
       ...startColumn,
-      items: remainingItems
+      items: startRemainingItems
     },
     [finishColumn.id]: {
       ...finishColumn,
@@ -234,11 +234,11 @@ const isEvenList = ({
     return '선택한 요소내에 짝수 아이템이 나열됩니다.'
   }
 
-  const remainingItems = Array.from(finishColumn.items).filter(
+  const finishRemainingItems = Array.from(finishColumn.items).filter(
     item => !selectedItems.has(item.id) && !(item.id === Number(draggableId))
   )
 
-  const startTempItems = startColumn.items.filter(item => {
+  const startRemainingItems = startColumn.items.filter(item => {
     const isDraggable = item.id === Number(draggableId)
     const isSelected = selectedItems.has(item.id)
     return !isDraggable && !isSelected
@@ -263,7 +263,7 @@ const isEvenList = ({
     const resultArray = moveItems({
       destinationIndex,
       selectedItems: draggedItems,
-      remainingItems,
+      remainingItems: finishRemainingItems,
       startIndex
     })
 
@@ -271,13 +271,13 @@ const isEvenList = ({
       return '현재지점에 짝수 아이템끼리 나열됩니다.'
     }
   } else {
-    remainingItems.splice(destinationIndex, 0, ...draggedItems)
+    finishRemainingItems.splice(destinationIndex, 0, ...draggedItems)
 
-    if (checkConsecutiveEvens(startTempItems.map(item => item.id))) {
+    if (checkConsecutiveEvens(startRemainingItems.map(item => item.id))) {
       return '시작지점에 짝수 아이템끼리 나열됩니다.'
     }
 
-    if (checkConsecutiveEvens(remainingItems.map(item => item.id))) {
+    if (checkConsecutiveEvens(finishRemainingItems.map(item => item.id))) {
       return '도착지점에 짝수 아이템끼리 나열됩니다.'
     }
   }

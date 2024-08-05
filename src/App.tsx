@@ -16,8 +16,6 @@ import {
   updateColumnItems
 } from './utils/dragConditionFn'
 
-// 멀티 드래그 후 정렬 만들어야 함
-// 만약 여러 Droppable에서 선택했을 때는 어떻게 할건지(1컬럼에서 2개 2컬럼에서 1개 -> 4컬럼으로 했을 때)
 function App() {
   const [columns, setColumns] = useState(getItems(4))
   const [isInvalidDrop, setIsInvalidDrop] = useState(false)
@@ -65,7 +63,7 @@ function App() {
                 ? [...selectedItemsArray]
                 : [Number(draggableId)],
             destinationIndex: destinationIndex,
-            currentColumnId: startColumn.id,
+            startColumnId: startColumn.id,
             columns,
             startIndex: source.index
           })
