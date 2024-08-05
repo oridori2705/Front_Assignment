@@ -186,8 +186,6 @@ function App() {
           </div>
         </DragDropContext>
       </RootContainer>
-      <div>{Array.from(selectedItems).join(', ')}</div>
-
       <ErrorMessage message={errorMessage} />
     </>
   )
