@@ -1,5 +1,3 @@
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import path from 'path'
 import webpack from 'webpack'
 import { merge } from 'webpack-merge'
@@ -20,18 +18,13 @@ const prodConfiguration: webpack.Configuration = {
         test: /\.(ts|tsx|js|jsx)$/,
         use: ['babel-loader'],
         exclude: /node_modules/
-      },
-      {
-        test: /\.css$/i,
-        use: [MiniCssExtractPlugin.loader, 'css-loader']
       }
     ]
   },
-  plugins: [new MiniCssExtractPlugin()],
+  plugins: [],
   optimization: {
     usedExports: true,
-    minimize: true,
-    minimizer: [new CssMinimizerPlugin()]
+    minimize: true
   }
 }
 
