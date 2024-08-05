@@ -143,7 +143,6 @@ export const DragDropContextSection = () => {
 
         <Button onClick={handleReset}>초기화하기</Button>
       </ButtonContainer>
-      <span>{history.length}</span>
       <ErrorMessage message={errorMessage} />
     </>
   )
