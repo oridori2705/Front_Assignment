@@ -7,19 +7,14 @@ export const useColumnState = () => {
     const savedColumns = localStorage.getItem('columns')
     return savedColumns ? JSON.parse(savedColumns) : getItems(4)
   })
-  const [history, setHistory] = useState<ColumnMap[]>([columns])
-  const [currentHistoryIndex, setCurrentHistoryIndex] = useState(0)
+  const [history, setHistory] = useState<ColumnMap[]>([])
 
   const updateColumns = (newColumns: ColumnMap) => {
-    const updatedHistory = [
-      ...history.slice(0, currentHistoryIndex + 1),
-      newColumns
-    ]
+    const updatedHistory = [...history, columns]
     if (updatedHistory.length > 5) {
       updatedHistory.shift()
     }
     setHistory(updatedHistory)
-    setCurrentHistoryIndex(updatedHistory.length - 1)
     setColumns(newColumns)
     localStorage.setItem('columns', JSON.stringify(newColumns))
   }
@@ -28,8 +23,7 @@ export const useColumnState = () => {
     columns,
     updateColumns,
     history,
-    currentHistoryIndex,
-    setCurrentHistoryIndex,
-    setColumns
+    setColumns,
+    setHistory
   }
 }

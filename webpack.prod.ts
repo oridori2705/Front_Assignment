@@ -1,9 +1,10 @@
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
+import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import path from 'path'
 import webpack from 'webpack'
 import { merge } from 'webpack-merge'
+
 import common from './webpack.common'
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 
 const prodConfiguration: webpack.Configuration = {
   mode: 'production',
