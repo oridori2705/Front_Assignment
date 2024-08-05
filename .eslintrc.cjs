@@ -15,50 +15,23 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: [
     'react',
-    'react-refresh',
+    'react-hooks',
     'import',
     'simple-import-sort',
     '@typescript-eslint',
     'prettier'
   ],
   settings: {
-    'import/resolver': {
-      typescript: {
-        alwaysTryTypes: true
-      },
-      react: {
-        version: 'detect'
-      }
+    react: {
+      version: 'detect'
     }
   },
   rules: {
-    'react-refresh/only-export-components': [
-      'warn',
-      { allowConstantExport: true }
-    ],
     'simple-import-sort/imports': 'error',
     'simple-import-sort/exports': 'error',
-    'import/order': [
-      'error',
-      {
-        groups: [
-          ['builtin', 'external'],
-          'internal',
-          ['parent', 'sibling'],
-          'index'
-        ],
-        'newlines-between': 'always',
-        pathGroups: [
-          {
-            pattern: '~/**',
-            group: 'internal',
-            position: 'after'
-          }
-        ]
-      }
-    ],
-    'react/prop-types': 0,
+    'react/prop-types': 'off',
     'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
     'prettier/prettier': [
       'warn',
       {

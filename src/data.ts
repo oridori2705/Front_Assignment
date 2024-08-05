@@ -1,6 +1,7 @@
 export interface Item {
   id: number
   content: string
+  isSelected: boolean
 }
 
 export interface Column {
@@ -9,16 +10,19 @@ export interface Column {
   items: Item[]
 }
 
-export const getItems = (count: number): Record<string, Column> => {
-  const columns: Record<string, Column> = {}
+export interface ColumnMap {
+  [key: string]: Column
+}
 
-  // 첫 번째 컬럼의 아이템 생성
+export const getItems = (count: number): ColumnMap => {
+  const columns: ColumnMap = {}
+
   const firstColumnItems: Item[] = Array.from({ length: 10 }, (_, index) => ({
     id: index + 1,
-    content: `item-${index + 1}`
+    content: `${index + 1}번`,
+    isSelected: false
   }))
 
-  // 컬럼 생성
   for (let i = 1; i <= count; i++) {
     const columnId = `column-${i}`
     columns[columnId] = {
@@ -29,16 +33,6 @@ export const getItems = (count: number): Record<string, Column> => {
   }
 
   return columns
-}
-export const reorder = (
-  list: Item[],
-  startIndex: number,
-  endIndex: number
-): Item[] => {
-  const result = Array.from(list)
-  const [removed] = result.splice(startIndex, 1)
-  result.splice(endIndex, 0, removed)
-  return result
 }
 
 export const GRID = 8
