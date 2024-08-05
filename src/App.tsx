@@ -23,7 +23,6 @@ function App() {
   const [isMultiDragging, setIsMultiDragging] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set([]))
   const [previousColumnId, setPreviousColumnId] = useState<string | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
 
   const onDragStart = useCallback(
     ({ draggableId }: DragStart) => {
@@ -37,15 +36,12 @@ function App() {
     (result: DropResult) => {
       const { destination, source, draggableId } = result
 
-      if (!isDragging) return
       if (!destination) {
-        setIsDragging(false)
         return
       }
 
       if (isInvalidDrop) {
         setIsInvalidDrop(false)
-        setIsDragging(false)
         return
       }
 
@@ -85,14 +81,12 @@ function App() {
       setSelectedItems(new Set())
       setIsMultiDragging(false)
       setErrorMessage('')
-      setIsDragging(false)
     },
-    [columns, isDragging, isInvalidDrop, selectedItems]
+    [columns, isInvalidDrop, selectedItems]
   )
 
   const onDragUpdate = useCallback(
     (update: DragUpdate) => {
-      setIsDragging(true)
       if (selectedItems.size > 0) setIsMultiDragging(true)
 
       const validationResult = isInvalidDropCondition({
