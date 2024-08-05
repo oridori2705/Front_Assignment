@@ -363,5 +363,3 @@ if (!selectedItems.has(Number(draggableId))) setSelectedItems(new Set())
 </details>
 
 <br/>
-
-```
