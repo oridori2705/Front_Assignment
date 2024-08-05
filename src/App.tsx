@@ -1,116 +1,41 @@
 import styled from '@emotion/styled'
 import { MouseEvent, useCallback, useEffect, useState } from 'react'
-import {
-  DragDropContext,
-  DragStart,
-  DragUpdate,
-  DropResult
-} from 'react-beautiful-dnd'
+import { DragDropContext } from 'react-beautiful-dnd'
 
 import ErrorMessage from './component/ErrorMessage'
 import ItemList from './component/ItemList'
-import { ColumnMap, getItems } from './data'
-import {
-  isInvalidDropCondition,
-  moveItemBetweenColumns,
-  updateColumnItems
-} from './utils/dragConditionFn'
+import { getItems } from './data'
+
 import DragDropDescription from './component/DragDescription'
+import { useColumnState } from './hook/useColumnState'
+import { useDragHandlers } from './hook/useDragHandlers'
 
 function App() {
-  const [columns, setColumns] = useState<ColumnMap>(() => {
-    const savedColumns = localStorage.getItem('columns')
-    return savedColumns ? JSON.parse(savedColumns) : getItems(4)
-  })
-  const [isInvalidDrop, setIsInvalidDrop] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [isMultiDragging, setIsMultiDragging] = useState(false)
+  const {
+    columns,
+    updateColumns,
+    currentHistoryIndex,
+    history,
+    setCurrentHistoryIndex,
+    setColumns
+  } = useColumnState()
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set([]))
   const [previousColumnId, setPreviousColumnId] = useState<string | null>(null)
 
-  const onDragStart = useCallback(
-    ({ draggableId }: DragStart) => {
-      if (!selectedItems.has(Number(draggableId))) setSelectedItems(new Set())
-      setIsInvalidDrop(false)
-    },
-    [selectedItems]
-  )
-
-  const onDragEnd = useCallback(
-    (result: DropResult) => {
-      const { destination, source, draggableId } = result
-
-      if (!destination) {
-        return
-      }
-
-      if (isInvalidDrop) {
-        setIsInvalidDrop(false)
-        return
-      }
-
-      const startColumn = columns[source.droppableId]
-      const finishColumn = columns[destination.droppableId]
-
-      const selectedItemsArray = Array.from(selectedItems)
-      const destinationIndex = destination.index
-
-      if (startColumn === finishColumn) {
-        const newColumns = updateColumnItems({
-          selectedItemsId:
-            selectedItemsArray.length > 0
-              ? [...selectedItemsArray]
-              : [Number(draggableId)],
-          destinationIndex: destinationIndex,
-          startColumnId: startColumn.id,
-          columns,
-          startIndex: source.index
-        })
-        setColumns(newColumns)
-
-        localStorage.setItem('columns', JSON.stringify(newColumns))
-      } else {
-        const newColumns = moveItemBetweenColumns({
-          startColumn,
-          finishColumn,
-          selectedItemIds:
-            selectedItemsArray.length > 0
-              ? [...selectedItemsArray]
-              : [Number(draggableId)],
-          destinationIndex,
-          columns
-        })
-        setColumns(newColumns)
-
-        localStorage.setItem('columns', JSON.stringify(newColumns))
-      }
-      setSelectedItems(new Set())
-      setIsMultiDragging(false)
-      setErrorMessage('')
-    },
-    [columns, isInvalidDrop, selectedItems]
-  )
-
-  const onDragUpdate = useCallback(
-    (update: DragUpdate) => {
-      if (selectedItems.size > 0) setIsMultiDragging(true)
-
-      const validationResult = isInvalidDropCondition({
-        dragUpdate: update,
-        columns,
-        selectedItems
-      })
-
-      if (validationResult) {
-        setIsInvalidDrop(true)
-        setErrorMessage(validationResult)
-      } else {
-        setIsInvalidDrop(false)
-        setErrorMessage('')
-      }
-    },
-    [columns, selectedItems]
-  )
+  const {
+    onDragStart,
+    onDragEnd,
+    onDragUpdate,
+    isInvalidDrop,
+    errorMessage,
+    isMultiDragging,
+    setIsMultiDragging
+  } = useDragHandlers({
+    columns,
+    selectedItems,
+    setSelectedItems,
+    updateColumns
+  })
 
   const toggleSelectItem = useCallback(
     (itemId: number, columnId: string) => {
@@ -145,6 +70,20 @@ function App() {
     },
     [toggleSelectItem]
   )
+
+  const handleUndo = useCallback(() => {
+    if (currentHistoryIndex === 0) return
+
+    const newHistoryIndex = currentHistoryIndex - 1
+    setCurrentHistoryIndex(newHistoryIndex)
+    setColumns(history[newHistoryIndex])
+  }, [currentHistoryIndex, history])
+
+  const handleReset = () => {
+    const resetColumns = getItems(4)
+    setColumns(resetColumns)
+    localStorage.setItem('columns', JSON.stringify(resetColumns))
+  }
 
   useEffect(() => {
     const onWindowClick = (e: Event) => {
@@ -192,7 +131,15 @@ function App() {
           </div>
         </DragDropContext>
       </RootContainer>
+      <ButtonContainer>
+        <Button
+          onClick={handleUndo}
+          disabled={currentHistoryIndex === 0}>
+          되돌리기
+        </Button>
 
+        <Button onClick={handleReset}>초기화하기</Button>
+      </ButtonContainer>
       <ErrorMessage message={errorMessage} />
       <DragDropDescription />
     </>
@@ -211,4 +158,30 @@ const ItemListWrapper = styled.div`
   border: 2px solid brown;
   overflow: hidden;
   border-radius: 20px;
+`
+const Button = styled.button`
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  margin: 0 10px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+`
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 `

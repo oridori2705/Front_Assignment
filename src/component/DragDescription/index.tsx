@@ -16,6 +16,12 @@ const DragDropDescription = () => {
         <ListItem>
           드래그 도중 유효하지 않은 위치로 이동하면 오류 메시지가 표시됩니다.
         </ListItem>
+        <ListItem>
+          최대 5번의 행동이 히스토리에 저장되어 되돌리기가 가능합니다.
+        </ListItem>
+        <ListItem>
+          초기화 버튼 클릭시 모든 드래그 요소들이 앱 시작 시점으로 되돌아갑니다.
+        </ListItem>
       </List>
       <Title>드래그 앤 드롭 기능 조건</Title>
       <List>
