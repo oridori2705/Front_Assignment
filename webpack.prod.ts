@@ -1,5 +1,4 @@
 import path from 'path'
-import TerserPlugin from 'terser-webpack-plugin'
 import webpack from 'webpack'
 import { merge } from 'webpack-merge'
 
@@ -25,19 +24,7 @@ const prodConfiguration: webpack.Configuration = {
   plugins: [],
   optimization: {
     usedExports: true,
-    minimize: true,
-    minimizer: [
-      new TerserPlugin({
-        terserOptions: {
-          compress: {
-            drop_console: true
-          },
-          output: {
-            comments: false
-          }
-        }
-      })
-    ]
+    minimize: true
   }
 }
 
